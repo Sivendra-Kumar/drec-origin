@@ -5,6 +5,8 @@ export const getMainFuelType = (fuelType: string, allTypes: CodeNameDTO[]) => {
         return { mainType: '', restType: '' };
     }
     try {
+        if(allTypes.find((type) => type.code === fuelType))
+        {
         const decodedType = allTypes.find((type) => type.code === fuelType).name;
         const splitValue = decodedType.split(':');
 
@@ -12,6 +14,11 @@ export const getMainFuelType = (fuelType: string, allTypes: CodeNameDTO[]) => {
         const restType = splitValue.length > 1 ? splitValue.slice(1).join() : '';
 
         return { mainType, restType };
+        }
+        else
+        {
+            return { mainType: '', restType: '' };
+        }
     } catch (error) {
         console.log(error);
         throw new Error(
