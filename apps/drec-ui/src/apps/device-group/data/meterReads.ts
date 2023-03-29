@@ -1,4 +1,5 @@
 import {
+    //@ts-ignore
     useReadsControllerGetGroupAggregatedReads,
     Aggregate
 } from '@energyweb/origin-drec-api-client';

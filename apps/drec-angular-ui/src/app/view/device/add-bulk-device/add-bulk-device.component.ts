@@ -7,16 +7,13 @@ import { MatTableDataSource, MatTable } from '@angular/material/table';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { MatSort } from '@angular/material/sort';
 import { MatPaginator } from '@angular/material/paginator';
-
-import { DeviceService } from '../../../auth/services/device.service'
-import { Router, ActivatedRoute } from '@angular/router';
 @Component({
   selector: 'app-add-bulk-device',
   templateUrl: './add-bulk-device.component.html',
   styleUrls: ['./add-bulk-device.component.scss']
 })
 export class AddBulkDeviceComponent implements OnInit {
-  currentFile?: File | null;
+  currentFile?: File;
   progress = 0;
   message = '';
   pageSize: number = 10;
@@ -24,7 +21,6 @@ export class AddBulkDeviceComponent implements OnInit {
   fileInfos?: Observable<any>;
   showdevicesinfo: boolean = false;
   DevicestatusList: any = [];
-  loading: boolean = true;
   objectKeys = Object.keys;
   displayedColumns = [
     "serialno",
@@ -40,9 +36,7 @@ export class AddBulkDeviceComponent implements OnInit {
     "Status",
     "Action"
   ];
-  constructor(private uploadService: FileuploadService,
-    private deviceService: DeviceService, private router: Router,
-    private toastrService: ToastrService) { }
+  constructor(private uploadService: FileuploadService, private toastrService: ToastrService) { }
   @ViewChild(MatPaginator) paginator: MatPaginator;
   @ViewChild(MatSort) sort: MatSort;
   dataSource: MatTableDataSource<any>;
@@ -50,23 +44,13 @@ export class AddBulkDeviceComponent implements OnInit {
   data: any;
   ngOnInit(): void {
     this.JobDisplayList();
+  }
 
-  }
-  reset() {
-    this.currentFile = null;
-    this.fileName = 'Select File';
-  }
   selectFile(event: any): void {
-    console.log(event)
     if (event.target.files && event.target.files[0]) {
       const file: File = event.target.files[0];
       this.currentFile = file;
       this.fileName = this.currentFile.name;
-      if (!this.fileName.endsWith('.csv')) {
-        //throw new Error("file not found");
-        this.fileName = 'Invalid file';
-        this.currentFile = null;
-      }
     } else {
       this.fileName = 'Select File';
     }
@@ -86,10 +70,8 @@ export class AddBulkDeviceComponent implements OnInit {
             next: (data: any) => {
               console.log(data)
               this.JobDisplayList();
-              // this.selectFile()
+             // this.selectFile()
               // this.readForm.reset();
-              this.currentFile = null;
-              this.fileName = 'Select File';
               this.toastrService.success('Successfully!', 'bulk devices upload successfully!!');
             },
             error: (err) => {                          //Error callback
@@ -102,7 +84,7 @@ export class AddBulkDeviceComponent implements OnInit {
           // } else if (event instanceof HttpResponse) {
           //   this.message = event.body.message;
 
-
+          
           // }
         },
         (err: any) => {
@@ -122,15 +104,13 @@ export class AddBulkDeviceComponent implements OnInit {
   }
   JobDisplayList() {
     this.showdevicesinfo = false;
-    this.loading = true;
     this.uploadService.getCsvJobList().subscribe(
       (data) => {
         // display list in the console 
-        this.loading = false;
+
         this.data = data;
         this.dataSource = new MatTableDataSource(this.data);
         this.dataSource.paginator = this.paginator
-        this.dataSource.sort = this.sort;
       }
     )
   }
@@ -146,35 +126,11 @@ export class AddBulkDeviceComponent implements OnInit {
         console.log(this.data);
         // this.data = data;
         this.dataSource1 = new MatTableDataSource(this.data);
-        this.dataSource1.paginator = this.paginator
+        this.dataSource.paginator = this.paginator
 
       })
 
 
-
-  }
-
-  UpdateDevice(externalId: any) {
-
-    this.deviceService.getDeviceInfoBYexternalId(externalId).subscribe(
-      (data) => {
-        if (data) {
-          this.router.navigate(['/device/edit/' + externalId]);
-        } else {
-          this.toastrService.error('device id has been updated', 'current external id not found!!');
-
-
-        }
-
-
-      },
-      (error) => {                              //Error callback
-        console.error('error caught in component', error)
-        this.toastrService.error('device id has been updated', 'current external id not found!!');
-
-
-      }
-    );
 
   }
 }

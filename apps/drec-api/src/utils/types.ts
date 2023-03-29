@@ -10,7 +10,6 @@ export interface ICertificateMetadata {
   buyerReservationId?:string;
   isStandardIssuanceRequested?:StandardCompliance;
   type?:CertificateType;
-  certificateTransactionUID?:string;
   //isStandardIssued?:boolean;
 }
 

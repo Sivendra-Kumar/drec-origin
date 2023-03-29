@@ -50,8 +50,4 @@ export class CheckCertificateIssueDateLogForDeviceGroupEntity extends ExtendedBa
   @Column()
   @IsString()
   countryCode: string;
-
-  @Column()
-  @IsString()
-  certificateTransactionUID:string
 }

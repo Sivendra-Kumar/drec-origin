@@ -24,7 +24,7 @@
         <input matInput (keyup)="applyFilter($event)" placeholder="Search" #input>
       </mat-form-field>
       <mat-progress-spinner [mode]="'indeterminate'" *ngIf="loading"></mat-progress-spinner>
-      <div class="content mat-elevation-z8 text-center" >
+      <div class="content mat-elevation-z8 text-center" *ngIf="!loading">
         <table mat-table [dataSource]="dataSource" class="mat-elevation-z8" matSort>
 
           <!-- Checkbox Column -->
@@ -78,7 +78,7 @@
             <th mat-header-cell *matHeaderCellDef>Action</th>
             <td mat-cell *matCellDef="let row; let i=index;">
               <!-- <button>certificate</button> -->
-              <a  [routerLink]="['../edit/', row.externalId]"><mat-icon>edit</mat-icon></a>
+              <a  [routerLink]="['../edit']" [queryParams]="{id:row.externalId}"><mat-icon>edit</mat-icon></a>
               <!-- <a  [routerLink]="['../edit']" [queryParams]="{id:row.externalId}"><mat-icon>add</mat-icon></a> -->
 
             </td>

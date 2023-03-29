@@ -53,10 +53,11 @@ export class EditDeviceComponent implements OnInit {
   constructor(private fb: FormBuilder, private authService: AuthbaseService,
     private deviceService: DeviceService, private router: Router,
     private toastrService: ToastrService, private activatedRoute: ActivatedRoute,) {
-    // this.activatedRoute.queryParams.subscribe(params => {
-    //   this.externalid = params['id'];
-    // });
-    this.externalid = this.activatedRoute.snapshot.params['id'];
+    this.activatedRoute.queryParams.subscribe(params => {
+      this.externalid = params['id'];
+
+
+    });
   }
 
   ngOnInit() {
@@ -69,7 +70,6 @@ export class EditDeviceComponent implements OnInit {
     this.date = new Date();
     this.myform = this.fb.group({
       externalId: [null, Validators.required],
-      //newexternalId: [null, Validators.required],
       projectName: [null],
       address: [null],
       latitude: [null, Validators.pattern(this.numberregex)],
@@ -146,18 +146,6 @@ export class EditDeviceComponent implements OnInit {
       }
     )
   }
-  shownewExternalidInput:boolean=false;
-  showcancelicon:boolean=false;
-  editExternalid(){
-    this.shownewExternalidInput=true;
-    this.showcancelicon=true;
-  }
-  hideeditExternalid(){
-    this.shownewExternalidInput=false;
-    this.myform.value.externalId=this.externalId;
-    this.showcancelicon=false;
-    console.log(this.myform);
-  }
   addmore() {
     this.addmoredetals = true;
     this.shownomore = true;
@@ -213,13 +201,11 @@ export class EditDeviceComponent implements OnInit {
 
   }
   onSubmit() {
-   
     console.log(this.myform);
-    if(this.myform.value.externalId===null){
-      this.myform.value.externalId=this.externalId;
-    }
+
+    // this.deviceForms.value.forEach((element: any) => {
     console.log(this.myform);
-    this.deviceService.Patchdevices(this.externalid, this.myform.value).subscribe({
+    this.deviceService.Patchdevices(this.id, this.myform.value).subscribe({
       next: (data: any) => {
         console.log(data)
         // this.deviceForms.reset();

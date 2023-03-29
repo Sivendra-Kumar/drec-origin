@@ -1,5 +1,6 @@
-import { Inject, Injectable, Logger, NotFoundException, ConflictException } from '@nestjs/common';
+import { Inject, Injectable, Logger, NotFoundException, ConflictException, HttpException } from '@nestjs/common';
 import { FindOneOptions, Repository, Brackets, SelectQueryBuilder, In, FindConditions, Any } from 'typeorm';
+import { BadRequestException } from '@nestjs/common';
 
 import axios from 'axios';
 import {
@@ -33,8 +34,9 @@ import { InfluxDB, FluxTableMetaData } from '@influxdata/influxdb-client'
 import { GetMarketplaceOrganizationHandler } from '@energyweb/origin-backend/dist/js/src/pods/organization/handlers/get-marketplace-organization.handler';
 import { ReadStatus } from 'src/utils/enums';
 import { DeltaFirstRead } from './delta_firstread.entity'
-import { HistoryNextInssuanceStatus } from '../../utils/enums/history_next_issuance.enum'
+
 import { ReadFilterDTO } from './dto/filter.dto'
+import { BADQUERY } from 'dns';
 export type TUserBaseEntity = ExtendedBaseEntity & IAggregateintermediate;
 
 @Injectable()
@@ -297,7 +299,7 @@ export class ReadsService {
       device,
     );
     console.log(filteredMeasurements);
-    // await this.newstoreGenerationReading(id, filteredMeasurements, device);
+    await this.newstoreGenerationReading(id, filteredMeasurements, device);
   }
 
 
@@ -716,7 +718,7 @@ export class ReadsService {
           measurement.reads.forEach(async (element, measurmentreadindex) => {
             if (final && final['timestamp']) {
               //@ts-ignore
-              if (new Date(element.endtimestamp).getTime() < new Date(final.timestamp).getTime()) {
+              if (new Date(element.endtimestamp) < new Date(final.timestamp)) {
                 return reject(
                   new ConflictException({
                     success: false,
@@ -768,7 +770,7 @@ export class ReadsService {
             measurement.reads.forEach((element, measurmentreadindex) => {
               if (final && final['timestamp']) {
                 //@ts-ignore
-                if (new Date(element.endtimestamp).getTime() < new Date(final.timestamp).getTime()) {
+                if (new Date(element.endtimestamp) < new Date(final.timestamp)) {
                   return reject(
                     new ConflictException({
                       success: false,
@@ -809,7 +811,7 @@ export class ReadsService {
             if (lastvalue.length > 0) {
               Delta = Math.abs(element.value - lastvalue[0].value);
 
-              if (new Date(element.endtimestamp).getTime() < new Date(lastvalue[0].datetime).getTime() || element.value <= lastvalue[0].value) {
+              if (new Date(element.endtimestamp)< new Date(lastvalue[0].datetime)|| element.value <= lastvalue[0].value) {
                 return reject(
                   new ConflictException({
                     success: false,
@@ -879,7 +881,7 @@ export class ReadsService {
             let Delta;
             if (lastvalue.length > 0) {
               Delta = Math.abs(element.value - lastvalue[0].value);
-              if (new Date(element.endtimestamp).getTime() < new Date(lastvalue[0].datetime).getTime() || element.value <= lastvalue[0].value) {
+              if (new Date(element.endtimestamp) < new Date(lastvalue[0].datetime) || element.value <= lastvalue[0].value) {
                 return reject(
                   new ConflictException({
                     success: false,
@@ -936,7 +938,7 @@ export class ReadsService {
     //       unit: measurement.unit,
 
     //     };
-    //   } 
+    //   }
     //   if (measurement.type === "History"){
 
     //   }
@@ -1052,9 +1054,6 @@ export class ReadsService {
   private getexisthistorydevcielogFilteredQuery(deviceid: string,
     startDate: Date,
     endDate: Date): SelectQueryBuilder<HistoryIntermediate_MeterRead> {
-    console.log(startDate);
-    console.log(endDate);
-
     //  const { organizationName, status } = filterDto;
     const query = this.historyrepository
       .createQueryBuilder("devicehistory").
@@ -1205,14 +1204,14 @@ export class ReadsService {
     // return Math.round(read.value + margin * read.value) < maxEnergy;
   }
 
- async  NewhistoryvalidateEnergy(
+  private NewhistoryvalidateEnergy(
     read: ReadDTO,
     device: DeviceDTO,
     requestmeteredTimePeriod: number,
     measurement: NewIntmediateMeterReadDTO,
     startdate: Date,
     enddate: Date
-  ): Promise<boolean> {
+  ): boolean {
     const computeMaxEnergy = (
       capacity: number,
       meteredTimePeriod: number,
@@ -1229,7 +1228,7 @@ export class ReadsService {
     this.logger.debug(JSON.stringify(read))
     const degradation = 0.5; // [%/year]
     const yieldValue = device.yieldValue || 1500; // [kWh/kW]
-    const capacity = device.capacity * 1000; // capacity in KilloWatt and read in Wh so coverting in Watt 
+    const capacity = device.capacity * 1000; // capacity in KilloWatt and read in Wh so coverting in Watt
     const commissioningDate = DateTime.fromISO(device.commissioningDate);
     const currentDate = DateTime.now();
     let deviceAge =
@@ -1264,35 +1263,6 @@ export class ReadsService {
         readsStartDate: startdate,
         readsEndDate: enddate
       })
-      console.log("1267");
-      if (device.groupId != null) {
-        console.log("1269");
-        const historynextissue =   await this.deviceGroupService.getNextHistoryissuanceDevicelogafterreservation(
-            device.externalId,
-            device.groupId
-          );
-        
-        console.log("historynextissue");
-        console.log(historynextissue);
-        if (historynextissue != undefined) {
-          let stdate = new Date(startdate).getTime();
-          let eddate = new Date(enddate).getTime();
-          //@ts-ignore
-          let reservSdate = new Date(historynextissue.reservationStartDate).getTime();
-          console.log(reservSdate);
-          //@ts-ignore
-          let reservEdate = new Date(historynextissue.reservationEndDate).getTime();
-          console.log(reservEdate);
-          console.log((stdate >= reservSdate && stdate < reservEdate));
-          console.log(eddate <= reservEdate && eddate > reservSdate);
-          if ((stdate >= reservSdate && stdate < reservEdate) && (eddate <= reservEdate && eddate > reservSdate)) {
-            //@ts-ignore
-            this.deviceGroupService.HistoryUpdatecertificateissuedate(historynextissue.id, HistoryNextInssuanceStatus.Pending);
-          }
-
-        }
-
-      }
       return Math.round(read.value + margin * read.value) < maxEnergy;
     } else {
       throw new ConflictException({
@@ -1454,20 +1424,58 @@ export class ReadsService {
     })
 
   }
-  //add new funtion for get meterread api response for histroy read
 
-  async getAllRead(externalId, filter: ReadFilterDTO, device_onboarded): Promise<any> {
+  async getAllRead(externalId, filter, deviceOnboarded, pageNumber: number): Promise<any> {
+    if (new Date(filter.start).getTime() == new Date(filter.end).getTime()) {
+      throw new HttpException('The given start and end timestamps are the same', 400)
+    }
+    let historyread = [];
+    let ongoing = [];
+    console.log("page number:::::::::::::::::::::::::::::::::::::::::::" + pageNumber)
 
-    let historyread = []
+    let sizeOfPage = 5
+    let numberOfPages = 0
+    let numberOfHistReads = await this.getnumberOfHistReads(externalId, filter.start, filter.end);
+    let numberOfOngReads = 0;
+    let numberOfReads = numberOfHistReads + numberOfOngReads;
+    if (numberOfHistReads > 0) {
+      numberOfPages = Math.ceil(numberOfHistReads / sizeOfPage);
+    }
 
-    if ((filter.start <= device_onboarded && filter.end <= device_onboarded) || (filter.start <= device_onboarded && filter.end > device_onboarded)) {
+    //@ts-ignore
+    if (typeof pageNumber === 'number' && !isNaN(pageNumber)) {
+      filter.offset = sizeOfPage * (pageNumber - 1);
+      filter.limit = sizeOfPage;
+    }
+    
+    numberOfOngReads = await this.getnumberOfOngReads(filter.start, filter.end, externalId, deviceOnboarded);
+    console.log(numberOfOngReads);
+    if (numberOfOngReads > numberOfHistReads) {
+      numberOfPages = Math.ceil(numberOfOngReads / sizeOfPage);
+    }
+    numberOfReads = numberOfHistReads + numberOfOngReads;
+    // numberOfPages=Math.ceil(numberOfReads/sizeOfPage)
+
+    if(numberOfHistReads==0 && numberOfOngReads==0)
+    {
+        return {historyread,ongoing,"numberOfReads":numberOfReads,"numberOfPages":0,"currentPageNumber":0}
+    }
+
+    if ((typeof pageNumber === 'number' && !isNaN(pageNumber)) && pageNumber>numberOfPages) 
+    {
+      return { historyread, ongoing, "numberOfReads": numberOfReads, "numberOfPages": numberOfPages,"currentPageNumber":1 };
+  
+    }
+
+        if (new Date(filter.start).getTime() <= new Date(deviceOnboarded).getTime()) {
       console.log("1431")
-      const query = await this.getexisthistorydevcielogFilteredQuery(externalId,
-        filter.start,
-        filter.end);
+      const query = await this.getexisthistorydevcielogFilteredQuery(externalId, filter.start, filter.end);
+      console.log("history query executed!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+      
       console.log("historyexistdevicequery");
       try {
-        const histroread = await query.getRawMany();
+        const histroread = await query.limit(filter.limit).offset(filter.offset).getRawMany();
+
         await histroread.forEach(element => {
           historyread.push({
             startdate: element.devicehistory_readsStartDate,
@@ -1475,22 +1483,121 @@ export class ReadsService {
             value: element.devicehistory_readsvalue
           })
         })
-
       } catch (error) {
         console.log(error)
         this.logger.error(`Failed to retrieve device`, error.stack);
-        //  throw new InternalServerErrorException('Failed to retrieve users');
       }
     }
-    const readsFilter: FilterDTO = {
-      offset: 0,
-      limit: 5000,
-      start: device_onboarded.toString(),
-      end: filter.end.toString(),
-    };
-    const ongoing = await this.baseReadsService.find(externalId, readsFilter)
-    return { historyread, ongoing };
+   
+    
+    if (new Date(deviceOnboarded).getTime() < new Date(filter.end).getTime()) {
+      console.log("offset::::::::::::" + filter.offset + "\nlimit:::::::::::::" + filter.limit + "\n device onboarded::::::::::" + deviceOnboarded.toString() + "\nend:::::::::" + filter.end.toString())
+      let readsFilter: FilterDTO = {
+        offset: filter.offset,
+        limit: filter.limit,
+        start: filter.start.toString(),
+        end: filter.end.toString(),
+      };
+      if (new Date(filter.start).getTime() > new Date(deviceOnboarded).getTime()) {
+        readsFilter = {
+          offset: filter.offset,
+          limit: filter.limit,
+          start: filter.start.toString(),
+          end: filter.end.toString(),
+        };
+      }
 
+      else {
+        readsFilter = {
+          offset: filter.offset,
+          limit: filter.limit,
+          start: deviceOnboarded,
+          end: filter.end.toString(),
+        };
+      }
+      console.log("device onboarded:::::::::" + deviceOnboarded + "\nend:::::::::::::::::" + filter.end);
+      if (new Date(filter.start).getTime() < new Date(deviceOnboarded).getTime() || new Date(deviceOnboarded).getTime() > new Date(filter.end).getTime())
+       {
+         ongoing = await this.baseReadsService.find(externalId, readsFilter)
+         console.log("ongoing query executed!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+         
+      }
+    }
+    console.log("count of ong reads:::::::::::::::::::::::::::::::::::" + await this.getnumberOfOngReads(filter.start, filter.end, externalId, deviceOnboarded))
+    if (typeof pageNumber === 'number' && !isNaN(pageNumber)) {
+    return { historyread, ongoing, "numberOfReads": numberOfReads, "numberOfPages": numberOfPages,"currentPageNumber":pageNumber };
+    }
+    else
+    {
+      return { historyread, ongoing, "numberOfReads": numberOfReads, "numberOfPages": numberOfPages,"currentPageNumber":1 };
+
+    }
   }
+
+
+  async getnumberOfHistReads(deviceId, startDate, endDate) {
+    const query = this.historyrepository.createQueryBuilder("devicehistory")
+      .where("devicehistory.deviceId = :deviceId", { deviceId })
+      .andWhere("devicehistory.readsStartDate <= :endDate", { endDate })
+      .andWhere("devicehistory.readsEndDate >= :startDate", { startDate });
+
+    const count = await query.getCount();
+    return count;
+  }
+
+
+  async getnumberOfOngReads(start: Date, end: Date, externalId, onboarded: Date) {
+    if (new Date(onboarded).getTime() > new Date(end).getTime()) {
+      console.log('The given dates are not for on-going reads')
+      return 0;
+    }
+    let fluxquery = ``;
+    if (new Date(start).getTime() > new Date(onboarded).getTime()) {
+      fluxquery = `from(bucket: "${process.env.INFLUXDB_BUCKET}")
+    |> range(start: ${start}, stop: ${end})
+    |> filter(fn: (r) => r._measurement == "read"and r.meter == "${externalId}")
+    |> count()`;
+    }
+
+    else {
+      fluxquery = `from(bucket: "${process.env.INFLUXDB_BUCKET}")
+    |> range(start: ${onboarded}, stop: ${end})
+    |> filter(fn: (r) => r._measurement == "read"and r.meter == "${externalId}")
+    |> count()`;
+    }
+    let noOfReads = await this.ongExecute(fluxquery);
+
+    return noOfReads;
+  }
+
+
+  async ongExecute(query: any) {
+    const data: any = await this.dbReader.collectRows(query);
+    if (typeof data[0] === 'undefined' || data.length == 0) {
+      console.log("type of data is undefined")
+      return 0;
+    }
+    return Number(data[0]._value);
+  }
+
+
+
+
+  async latestread(meterId,deviceOnboarded)
+  {
+    let  query=`
+  from(bucket: "${process.env.INFLUXDB_BUCKET}")
+  |> range(start: ${deviceOnboarded}, stop: now())
+  |> filter(fn: (r) => r.meter == "${meterId}" and r._field == "read")
+  |> last()
+  `;
+  
+  return await this.execute(query);
+  }
+
+
+
+
+
 }
 
