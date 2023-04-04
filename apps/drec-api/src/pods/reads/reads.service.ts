@@ -1468,7 +1468,6 @@ export class ReadsService {
     }
 
         if (new Date(filter.start).getTime() <= new Date(deviceOnboarded).getTime()) {
-      console.log("1431")
       const query = await this.getexisthistorydevcielogFilteredQuery(externalId, filter.start, filter.end);
       console.log("history query executed!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
       
