@@ -1,6 +1,8 @@
 /* You can add global styles to this file, and also import other style files */
 @import "~@angular/material/prebuilt-themes/indigo-pink.css";
 
+
+
 html,
 body,
 .mat-mdc-card-title,
@@ -12,7 +14,16 @@ h4,
 h5,
 h6,
 p {
-    font-family: 'Montserrat', sans-serif !important;
+    font-family: 'Poppins', sans-serif !important;
+}
+.mat-typography,
+.mat-button,
+.mat-input-element,
+.mat-select,
+.mat-checkbox-label,
+.mat-radio-label,
+.mat-table {
+    font-family: 'Poppins', sans-serif !important;
 }
 
 // Variables
@@ -34,6 +45,7 @@ $f-16: 16px;
 html,
 body {
     height: 100%;
+    font-family: 'Poppins', sans-serif !important;
 }
 
 // body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
@@ -335,4 +347,11 @@ border-left-color:$primary!important ;
 }
 .mat-mdc-dialog-surface.mdc-dialog__surface::-webkit-scrollbar{
     display: none !important;
+}
+
+// this is for all-device component table heading left 
+.alldevice-component{
+    .mat-sort-header-content{
+        text-align: left;
+    }
 }

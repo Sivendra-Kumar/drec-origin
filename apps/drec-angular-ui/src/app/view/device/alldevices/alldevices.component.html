@@ -1,5 +1,5 @@
-<div class="body-bg">
-
+<div class="body-bg alldevice-component">
+<!-- <div class="bg-warning"></div> -->
   <mat-card>
     <mat-card-header class="d-flex mb-3 justify-content-between mat-crd-hide align-items-center ">
 
@@ -10,8 +10,8 @@
         </mat-card-title>
       </div>
       <div>
-        <button class="btn btn-dark justify-content-end px-4" routerLink="/device/add">
-          <mat-icon class="align-middle pe-2">add_circle</mat-icon>Add New Devices</button>
+        <button class="btn btn-dark justify-content-end px-4 d-flex align-items-center" routerLink="/device/add">
+          <mat-icon class="align-middle me-2">add_circle</mat-icon>Add New Devices</button>
       </div>
 
 
@@ -44,7 +44,7 @@
 
           <!-- Position Column -->
           <ng-container matColumnDef="onboarding_date">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header> OnBoarding Date </th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-left"> OnBoarding Date </th>
             <td mat-cell *matCellDef="let row;let i=index"> {{row.createdAt| date:'EEE d MMM y hh:mm:ss'}} </td>
           </ng-container>
           <ng-container matColumnDef="projectName">

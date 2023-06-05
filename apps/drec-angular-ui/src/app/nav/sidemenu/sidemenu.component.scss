@@ -9,12 +9,16 @@ $mat-divider-rgba:rgba(255, 255, 255, 0.5);
 $example-sidenav-rgba:rgba(0,0,0,0.1);
 $example-sidenav-rgba-bg:rgba(247, 247, 248, 0.5);
 
+::ng-deep .mat-expansion-panel-body{
+  padding: 0 17px 16px !important;
+}
 .example-container {
     position: absolute;
-    top: 60px;
-    bottom: 60px;
+    top: 46px;
+    bottom: 38px;
     left: 0;
     right: 0;
+    z-index: 0;
   }
 .example-sidenav {
     display: flex;
@@ -29,6 +33,8 @@ $example-sidenav-rgba-bg:rgba(247, 247, 248, 0.5);
     align-items: center;
     justify-content: flex-start;
     font-size: 1rem;
+    margin-bottom: 6px;
+    
   
     mat-icon {
         margin-right: 8px;
@@ -83,3 +89,48 @@ $example-sidenav-rgba-bg:rgba(247, 247, 248, 0.5);
     // mat-button:hover{
     //   background-color: red;
     // }
+// this is for inside list matexpansion panel
+    mat-nav-list{
+      .inside-menu-button
+      {
+          height: 30px !important;
+          font-size: 14px;
+          letter-spacing: 0.6px;
+          font-weight: 300;
+        &.active
+        {
+        // color: $primary!important;
+        border-radius: 0px;
+        // background: #fff !important;
+        // box-shadow: 3px 0px 33px $example-sidenav-rgba !important;
+        // padding: 20px inherit!important;
+        }
+        }
+    }
+
+// this is for mat expension panel height after expand     
+    .mat-expansion-panel-header.mat-expanded{
+      height: 45px !important;
+    }
+
+
+.mdc-button{
+  // width: 100%;
+  display: flex;
+  align-items: center;
+  // justify-content: flex-start;
+  // font-size: 1rem;
+  // margin-bottom: 6px;
+  padding: 0 13px 0px 7px;
+  mat-icon {
+      margin-right: 8px;
+      vertical-align: top;
+      font-size: 1.125rem;
+      height: 1.125rem;
+      width: 1.125rem;
+  }
+  ::ng-deep .mat-content{
+    display: flex;
+    align-items: center;
+  }
+}    

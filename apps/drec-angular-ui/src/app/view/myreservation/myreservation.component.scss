@@ -4,6 +4,7 @@ $secondary: #010101;
 {
     padding: 35px 30px 35px 30px;
     background: #f2f2f2;
+    z-index: 0;
     .mat-mdc-card
     {
         box-shadow: 3px 0px 33px rgba(0,0,0,0.1)!important;
@@ -81,3 +82,37 @@ $secondary: #010101;
   //   }
     
   // }
+
+  .mat-elevation-z8{
+    min-width: 100% !important;
+    overflow: scroll;
+    mat-paginator{
+      display: initial !important;
+    }
+  }
+  mat-progress-spinner{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 5;
+  }
+  // .bg-warning{
+  //   position: absolute;
+  //   background: #010101;
+  //   width: 100%;
+  //   height: 100vh;
+  //   z-index: 1;
+  //   top: 0;
+  //   left: 0;
+  // }
+  .bg-warning
+  {
+    position: fixed;
+    width: 100vw;
+    left: 0;
+    right: 0;
+    height: 100vh;
+    background: rgba(0,0,0,0.2) !important;
+    z-index: 1;
+}
